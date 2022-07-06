@@ -11,16 +11,22 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=creds.client_ID, client
 
 ### RFID Setup ###
 reader = SimpleMFRC522()
+currentCard = ""
 
 while True:
     print()
     print("Place card to read")
     play_uri = [str.strip("spotify:"+reader.read()[1])]
-
-
-    if play_uri[0].startswith("spotify:track"):
-        sp.start_playback(device_id=creds.device_id, context_uri=None, uris=play_uri, offset=None, position_ms=None)
+    
+    if currentCard==reader.read()[0]:
+        repeatedScan = False
     else:
+        repeatedScan = True
+        currentCard=reader.read()[0]
+
+    if play_uri[0].startswith("spotify:track") and repeatedScan:
+        sp.start_playback(device_id=creds.device_id, context_uri=None, uris=play_uri, offset=None, position_ms=None)
+    elif play_uri[0].startswith("spotify:album") and repeatedScan:
         album_details = sp.album(play_uri[0].split(":")[2])
         track_uris=[]
         for i in album_details["tracks"]["items"]:
