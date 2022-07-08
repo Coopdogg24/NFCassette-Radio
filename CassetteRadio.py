@@ -1,28 +1,29 @@
-import creds
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-import RPi.GPIO as GPIO
-from mfrc522 import SimpleMFRC522
 import json
+
+import creds
+import RFID
 
 ### Spotify Setup ###
 scope = ["user-modify-playback-state", "user-read-playback-state", "user-read-currently-playing", "app-remote-control, streaming"]
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=creds.client_ID, client_secret=creds.client_SECRET, redirect_uri=creds.redirect_url, scope=scope))
 
-### RFID Setup ###
-reader = SimpleMFRC522()
 currentCard = ""
 
 while True:
     print()
     print("Place card to read")
-    play_uri = [str.strip("spotify:"+reader.read()[1])]
     
-    if currentCard==reader.read()[0]:
+    scannedCard = RFID.Read()
+    play_uri = [str.strip("spotify:"+scannedCard[1])]
+    
+
+    if currentCard==scannedCard[0]:
         repeatedScan = False
     else:
         repeatedScan = True
-        currentCard=reader.read()[0]
+        currentCard=scannedCard[0]
 
     if play_uri[0].startswith("spotify:track") and repeatedScan:
         sp.start_playback(device_id=creds.device_id, context_uri=None, uris=play_uri, offset=None, position_ms=None)
