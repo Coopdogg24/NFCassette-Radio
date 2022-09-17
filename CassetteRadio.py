@@ -1,5 +1,6 @@
 from Hardware import RFID 
 from  Software import Spotify
+import asyncio
 
 RFScanner = RFID()
 Spotify = Spotify()

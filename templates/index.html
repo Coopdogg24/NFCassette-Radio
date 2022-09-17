@@ -4,10 +4,55 @@
         <title>NFCasset Tape Radio</title>
     </head>
     <body>
+        <!-- Form dedicated to formatting URLs -->
+        <h1>URL Formatter</h1>
         <form action="/" method = "POST">
             <p>Spotify URL <input type = "text" name = "spotifyURL" /></p>
             <p><input type = "submit" value = "submit" /></p>
         </form>
-        {{form_data}}
+        {{formatted_writeData}}
+        <br>
+
+        <!-- Form dedicated to Playback Controls -->
+        <h1>Playback controls</h1>
+        {{currently_playing}}
+        <form action="/" method="post">
+            <button name="playbackControls" value="play">Play</button>
+            <button name="playbackControls" value="pause">Pause</button>
+            <button name="playbackControls" value="previous">Previous</button>
+            <button name="playbackControls" value="next">Next</button>
+        </form>
+        <br>
+
+        <!-- Form dedicated to Device Selection (WIP) -->
+        <h1>Select Device</h1>
+        <form action="/" method = "POST">
+            <label for="devices">Choose a device:</label>
+            <select name="devices" id="devices">
+              <option value="CoopersPC">CoopersPC</option>
+              <option value="Luci">Luci</option>
+              <option value="CooperPhone">CooperPhone</option>
+            </select>
+            <br><br>
+            <input type="submit" value="Submit">
+          </form>
+        <br>
+
+        <!-- Form dedicated to listing devices -->
+        <h1>Device list</h1>
+        {{device_list}}
+        <form action="/" method="post">
+            <button name="deviceControl" value="listDevices">List Devices</button>
+        </form>
+        <br>
+
+        <!-- Form dedicated to listing devices -->
+        <h1>NFC Tag Control</h1>
+        <form action="/nfcRead" method="post">
+            <button name="NFCControl" value="read">Read NFC Tag</button>
+            <p>Write Data <input type = "text" name = "NFCControl" /></p>
+            <p><input type = "submit" value = "write" /></p>
+        </form>
+        <br>
     </body>
 </html>
