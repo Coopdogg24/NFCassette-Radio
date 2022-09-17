@@ -20,3 +20,5 @@ while True:
         Spotify.playTrack(spotifyURI)
     elif spotifyURI[0].startswith("spotify:album") and repeatedScan:
         Spotify.playAlbum(spotifyURI[0].split(":")[2])
+    elif spotifyURI[0].startswith("spotify:playl") and repeatedScan:
+        Spotify.playPlaylist(spotifyURI[0].split(":")[2])

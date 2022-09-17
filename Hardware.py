@@ -14,7 +14,7 @@ class RFID:
         print("\nPlace card to read")
         return(self.reader.read())
 
-    def Write(self, newData:str): #To be created 
+    def Write(self, newData:str):
         """Description:
             Requests MFRC522 to write new data to a tapped card
 
