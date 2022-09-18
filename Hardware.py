@@ -1,8 +1,14 @@
+from Software import MongoDB
+
 class RFID:
     def __init__(self):
         import RPi.GPIO as GPIO
         from mfrc522 import SimpleMFRC522
+        from mfrc522 import MFRC522
+        from Software import MongoDB
         self.reader = SimpleMFRC522()
+        self.backupReader = MFRC522()
+        self.MongoDB = MongoDB()
     
     def Read(self):
         """Description:
@@ -12,7 +18,16 @@ class RFID:
             n/a
         """
         print("\nPlace card to read")
-        return(self.reader.read())
+        cardData = self.reader.read()
+        if cardData[1] == "":
+            status, _ = self.backupReader.MFRC522_Request(self.backupReader.PICC_REQIDL)
+            status, backData = self.backupReader.MFRC522_Anticoll()
+            buf = self.backupReader.MFRC522_Read(0)
+            self.backupReader.MFRC522_Request(self.backupReader.PICC_HALT)
+            if buf:
+                return(cardData[0], self.MongoDB.getTagData((':'.join([hex(x) for x in buf]))))
+        #Note: Needs to return [ID, Data]
+        return(cardData)
 
     def Write(self, newData:str):
         """Description:
@@ -24,6 +39,20 @@ class RFID:
         Example:
             ```newData("Write this text")```
         """
-        print("\nPlace card to write '{}'".format(newData))        
+        print("\nPlace card to write '{}'".format(newData))       
+
+        cardData = self.reader.read()
+        if cardData[1] == "":
+            status, _ = self.backupReader.MFRC522_Request(self.backupReader.PICC_REQIDL)
+            status, backData = self.backupReader.MFRC522_Anticoll()
+            buf = self.backupReader.MFRC522_Read(0)
+            self.backupReader.MFRC522_Request(self.backupReader.PICC_HALT)
+            if buf:
+                cardHex = (':'.join([hex(x) for x in buf]))
+                if self.MongoDB.checkIfExists(cardHex):
+                    self.MongoDB.replaceTagData(cardHex, newData)
+                else:
+                    self.MongoDB.writeNewTag(cardHex, newData)
+                return()
         self.reader.write(newData)
         return()

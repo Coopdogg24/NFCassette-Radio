@@ -20,6 +20,7 @@ class Spotify:
             ```playTrack(["3BIf974vl0lIEo3EY1XvD1"])```
         """
         self.sp.start_playback(device_id=self.deviceID, context_uri=None, uris=trackURI, offset=None, position_ms=None)
+        self.repeat("track")
         return()
 
     def playAlbum(self, albumURI):
@@ -39,6 +40,7 @@ class Spotify:
             track_uris.append(i["uri"])
         
         self.sp.start_playback(device_id=self.deviceID, context_uri=None, uris=track_uris, offset=None, position_ms=None)
+        self.repeat("context")
         return()
     
     def playPlaylist(self, playlistURI):
@@ -58,6 +60,7 @@ class Spotify:
             track_uris.append(i["track"]["uri"])
         
         self.sp.start_playback(device_id=self.deviceID, context_uri=None, uris=track_uris, offset=None, position_ms=None)
+        self.repeat("context")        
         return()
 
     def pause(self):
@@ -193,3 +196,55 @@ class Spotify:
         """
         return(self.sp.artist_related_artists(artistURI))
 
+class MongoDB:
+    def __init__(self):
+        from pymongo import MongoClient
+        import creds
+
+        self.client = MongoClient(creds.mongoCluster)
+        self.NFC_Tags = self.client.NFC_Data.NFC_Tags
+    
+    def getTagData(self, tagHex):
+        """Description:
+            Gets the tag details from the MongoDB database
+
+        Args:
+            tagID (string): The ID of the NFC tag
+        """
+        return(self.NFC_Tags.find_one({"hex": tagHex})["data"])
+    
+    def writeNewTag(self, tagHex, data):
+        """Description:
+            Writes a new tag to the MongoDB database
+
+        Args:
+            tagID (string): The ID of the NFC tag
+            data (string): The data to be written to the tag
+        """
+        print("write new tag")
+        self.NFC_Tags.insert_one({"hex": tagHex, "data": data})
+        return()
+    
+    def replaceTagData(self, tagHex, data):
+        """Description:
+            Replaces the data of an existing tag in the MongoDB database
+
+        Args:
+            tagID (string): The ID of the NFC tag
+            data (string): The data to be written to the tag
+        """
+        print("replace tag data")
+        self.NFC_Tags.update_one({"hex": tagHex}, {"$set":{"data": data}})
+        return()
+
+    def checkIfExists(self, tagHex):
+        """Description:
+            Checks if a tag exists in the MongoDB database
+
+        Args:
+            tagHex (string): The ID of the NFC tag
+        """
+        if str(self.NFC_Tags.find_one({"hex": tagHex})) == "None":
+            return(False)
+        else:
+            return(True)

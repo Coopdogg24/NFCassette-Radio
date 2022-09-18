@@ -44,6 +44,7 @@ def nfcRead():
     if request.form["NFCControl"] == "read":
         currentCard = ""
         scannedCard = RFScanner.Read()
+        print("Scanned Card:",scannedCard)
         spotifyURI = [str.strip("spotify:"+scannedCard[1])]
 
         if currentCard==scannedCard[0]:
