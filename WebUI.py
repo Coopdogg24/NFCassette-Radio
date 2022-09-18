@@ -1,8 +1,6 @@
 from flask import Flask, render_template, request, redirect
 from Hardware import RFID 
 from  Software import Spotify
-import asyncio
-from time import sleep
 
 app = Flask(__name__)
 RFScanner = RFID()
@@ -41,41 +39,34 @@ def index():
 
     return render_template("index.html", currently_playing=currentlyPlaying)
 
-@app.route("/nfcRead/", methods = ['POST', 'GET'])
+@app.route("/nfcRead/", methods = ['POST'])
 def nfcRead():
-    print(request.form)
     if request.form["NFCControl"] == "read":
-        playSpotify()
+        currentCard = ""
+        scannedCard = RFScanner.Read()
+        spotifyURI = [str.strip("spotify:"+scannedCard[1])]
+
+        if currentCard==scannedCard[0]:
+            repeatedScan = False
+        else:
+            repeatedScan = True
+            currentCard=scannedCard[0]
+
+        if spotifyURI[0].startswith("spotify:track") and repeatedScan:
+            Spotify.playTrack(spotifyURI)
+        elif spotifyURI[0].startswith("spotify:album") and repeatedScan:
+            Spotify.playAlbum(spotifyURI[0].split(":")[2])
+        elif spotifyURI[0].startswith("spotify:playl") and repeatedScan:
+            Spotify.playPlaylist(spotifyURI[0].split(":")[2])
+
     else:
-        WriteNFC()
+        if "album" in request.form["NFCControl"]:
+            writeData = "album:" + request.form["NFCControl"][31:].split("?si=")[0]
+        elif "track" in request.form["NFCControl"]:
+            writeData = "track:" + request.form["NFCControl"][31:].split("?si=")[0]
+        elif "playlist" in request.form["NFCControl"]:
+            writeData = "playl:" + request.form["NFCControl"][34:].split("?si=")[0]
+        RFScanner.Write(writeData)
     return render_template('index.html', currently_playing="Currently Playing: " + Spotify.getCurrentlyPlaying()["item"]["name"])
-    
-def playSpotify():
-    currentCard = ""
-    scannedCard = RFScanner.Read()
-    spotifyURI = [str.strip("spotify:"+scannedCard[1])]
-    
-    if currentCard==scannedCard[0]:
-        repeatedScan = False
-    else:
-        repeatedScan = True
-        currentCard=scannedCard[0]
-
-    if spotifyURI[0].startswith("spotify:track") and repeatedScan:
-        Spotify.playTrack(spotifyURI)
-    elif spotifyURI[0].startswith("spotify:album") and repeatedScan:
-        Spotify.playAlbum(spotifyURI[0].split(":")[2])
-    elif spotifyURI[0].startswith("spotify:playl") and repeatedScan:
-        Spotify.playPlaylist(spotifyURI[0].split(":")[2])
-
-def WriteNFC():
-    if "album" in request.form["NFCControl"]:
-        writeData = "album:" + request.form["NFCControl"][31:].split("?si=")[0]
-    elif "track" in request.form["NFCControl"]:
-        writeData = "track:" + request.form["NFCControl"][31:].split("?si=")[0]
-    elif "playlist" in request.form["NFCControl"]:
-        writeData = "playl:" + request.form["NFCControl"][34:].split("?si=")[0]
-    RFScanner.Write(writeData)
-    
 
 app.run(host='localhost', port=5000)

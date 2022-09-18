@@ -24,6 +24,6 @@ class RFID:
         Example:
             ```newData("Write this text")```
         """
-        print("\nPlace card to write")        
+        print("\nPlace card to write '{}'".format(newData))        
         self.reader.write(newData)
         return()
